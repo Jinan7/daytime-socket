@@ -2,7 +2,7 @@
 #include <strings.h>
 #include <stdio.h>
 #include <arpa/inet.h>
-
+#include <unistd.h>
 int main()
 {
 	//create socket address struct for server and client
@@ -16,7 +16,7 @@ int main()
 	
 	//create server socket and bind to address
 	int listenfd;
-	listenfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(listenfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
 	
 	//convert server socket to listening socket
@@ -24,12 +24,17 @@ int main()
 	
 	//accept connection from clients
 	int connfd;
+	char buff[50];
 	socklen_t len;
 	for (;;)
 	{
 		len = sizeof(cliaddr);
 		
-		connfd = accept(listenfd, (struct sockaddr *) &cliaddr, &len);	
+		connfd = accept(listenfd, (struct sockaddr *) &cliaddr, &len);
+		const char *fi = inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff));
+		
+		printf("client\nIP Address: %s\nPort: %d\n", fi, ntohs(cliaddr.sin_port));
+		close(connfd);
 	}
 	return 0;
 }
